@@ -1,0 +1,470 @@
+﻿
+@model FoodOrder.Core.ViewModels.Homes.HomeVM
+@using System.Globalization
+@inject Microsoft.Extensions.Configuration.IConfiguration Configuration;
+
+
+@{
+    ViewData["Title"] = "Home Page";
+    var maxTotalSalePerDay = Model.TotalSaleLast30Days.Max() * 1.2;
+    var maxTotalSaleLast6Months = Model.TotalSaleLast6Months.Max() * 1.2;
+}
+
+@section Scripts {
+    <script>
+        // Set new default font family and font color to mimic Bootstrap's default styling
+        Chart.defaults.global.defaultFontFamily = '-apple-system,system-ui,BlinkMacSystemFont,"Segoe UI",Roboto,"Helvetica Neue",Arial,sans-serif';
+        Chart.defaults.global.defaultFontColor = '#292b2c';
+
+        // Area Chart Example
+        var ctx = document.getElementById("myAreaChart");
+        var myLineChart = new Chart(ctx, {
+            type: 'line',
+            data: {
+                labels: @Html.Raw(Json.Serialize(ViewBag.TotalSalePerDayLables)),
+                datasets: [{
+                    label: "Total sale",
+                    lineTension: 0.3,
+                    backgroundColor: "rgba(2,117,216,0.2)",
+                    borderColor: "rgba(2,117,216,1)",
+                    pointRadius: 5,
+                    pointBackgroundColor: "rgba(2,117,216,1)",
+                    pointBorderColor: "rgba(255,255,255,0.8)",
+                    pointHoverRadius: 5,
+                    pointHoverBackgroundColor: "rgba(2,117,216,1)",
+                    pointHitRadius: 50,
+                    pointBorderWidth: 2,
+                    data: @Html.Raw(Json.Serialize(Model.TotalSaleLast30Days)),
+                }],
+            },
+            options: {
+
+                scales: {
+                    xAxes: [{
+                        time: {
+                            unit: 'date'
+                        },
+                        gridLines: {
+                            display: false
+                        },
+                        ticks: {
+                            maxTicksLimit: 7
+                        }
+                    }],
+                    yAxes: [{
+
+                        ticks: {
+                            min: 0,
+                            max: @Html.Raw(Json.Serialize(maxTotalSalePerDay)),
+                            maxTicksLimit: 5,
+                            callback: function (value, index, values) {
+                                return value.toLocaleString("vi-VN", { style: "currency", currency: "VND" });
+                            }
+                        },
+                        gridLines: {
+                            color: "rgba(0, 0, 0, .125)",
+                        }
+                    }],
+                },
+                legend: {
+                    display: false
+                }
+            }
+        });
+
+
+        var ctx2 = document.getElementById("myBarChart");
+        var myLineChart2 = new Chart(ctx2, {
+            type: 'bar',
+            data: {
+                labels:  @Html.Raw(Json.Serialize(ViewBag.TotalSalePerMonthLables)),
+                datasets: [{
+                    label: "Revenue",
+                    backgroundColor: "rgba(2,117,216,1)",
+                    borderColor: "rgba(2,117,216,1)",
+                    data:  @Html.Raw(Json.Serialize(Model.TotalSaleLast6Months)),
+                }],
+            },
+            options: {
+                scales: {
+                    xAxes: [{
+                        time: {
+                            unit: 'month'
+                        },
+                        gridLines: {
+                            display: false
+                        },
+                        ticks: {
+                            maxTicksLimit: 6
+                        }
+                    }],
+                    yAxes: [{
+                        ticks: {
+                            min: 0,
+                            max: @Html.Raw(Json.Serialize(maxTotalSaleLast6Months)),
+                            maxTicksLimit: 5,
+                            callback: function (value, index, values) {
+                                return value.toLocaleString("vi-VN", { style: "currency", currency: "VND" });
+                            }
+                        },
+                        gridLines: {
+                            display: true
+                        }
+                    }],
+                },
+                legend: {
+                    display: false
+                }
+            }
+        });
+
+    </script>
+}
+
+<div class="container-fluid">
+    <h1 class="mt-4">Dashboard</h1>
+    <ol class="breadcrumb mb-4">
+        <li class="breadcrumb-item active">Dashboard</li>
+    </ol>
+    <div class="row">
+        <div class="col-xl-3 col-md-6">
+            <div class="card bg-info text-white mb-4">
+                <div class="card-body">Total order today</div>
+                <div class="card-footer d-flex align-items-center justify-content-between">
+                    <div class="small text-white stretched-link" href="#">@Model.TotalOrderToday</div>
+                    <div class="small text-white"><i class="fas fa-angle-right"></i></div>
+                </div>
+            </div>
+        </div>
+        <div class="col-xl-3 col-md-6">
+            <div class="card bg-primary text-white mb-4">
+                <div class="card-body">Total sale today</div>
+                <div class="card-footer d-flex align-items-center justify-content-between">
+                    <div class="small text-white stretched-link" href="#">@Model.TotalSaleToday.ToString("C", new CultureInfo("vi-VN"))</div>
+                    <div class="small text-white"><i class="fas fa-angle-right"></i></div>
+                </div>
+            </div>
+        </div>
+        <div class="col-xl-3 col-md-6">
+            <div class="card bg-info text-white mb-4">
+                <div class="card-body">Total delivered today</div>
+                <div class="card-footer d-flex align-items-center justify-content-between">
+                    <div class="small text-white stretched-link" href="#">@Model.TotalDeliveredToday</div>
+                    <div class="small text-white"><i class="fas fa-angle-right"></i></div>
+                </div>
+            </div>
+        </div>
+        <div class="col-xl-3 col-md-6">
+            <div class="card bg-primary text-white mb-4">
+                <div class="card-body">Total canceled today</div>
+                <div class="card-footer d-flex align-items-center justify-content-between">
+                    <div class="small text-white stretched-link" href="#">@Model.TotalCanceledToday</div>
+                    <div class="small text-white"><i class="fas fa-angle-right"></i></div>
+                </div>
+            </div>
+        </div>
+    </div>
+    <div class="row">
+        <div class="col-xl-6">
+            <div class="card mb-4">
+                <div class="card-header">
+                    <i class="fas fa-chart-area mr-1"></i>
+                    Total sales on current 30 days
+                </div>
+                <div class="card-body"><canvas id="myAreaChart" width="100%" height="40"></canvas></div>
+            </div>
+        </div>
+        <div class="col-xl-6">
+            <div class="card mb-4">
+                <div class="card-header">
+                    <i class="fas fa-chart-bar mr-1"></i>
+                    Total sales on current 6 months
+                </div>
+                <div class="card-body"><canvas id="myBarChart" width="100%" height="40"></canvas></div>
+            </div>
+        </div>
+    </div>
+
+    <div class="container-fluid">
+        <h1 class="mt-4">List best selling food</h1>
+        <ol class="breadcrumb mb-4">
+            <li class="breadcrumb-item"><a href="index.html">Dashboard</a></li>
+            <li class="breadcrumb-item active">List Food</li>
+        </ol>
+        <div class="card mb-4">
+
+            <div class="card-body">
+                <div class="table-responsive">
+                    <table class="table table-bordered" id="dataTable" width="100%" cellspacing="0">
+                        <thead>
+                            <tr>
+                                <th>
+                                    @Html.DisplayNameFor(model => model.ListBestSellingFood.FirstOrDefault().ID)
+                                </th>
+                                <th>
+                                    Image
+                                </th>
+                                <th>
+                                    @Html.DisplayNameFor(model => model.ListBestSellingFood.FirstOrDefault().Name)
+                                </th>
+                                <th>
+                                    @Html.DisplayNameFor(model => model.ListBestSellingFood.FirstOrDefault().Description)
+                                </th>
+                                <th>
+                                    @Html.DisplayNameFor(model => model.ListBestSellingFood.FirstOrDefault().Price)
+                                </th>
+                                <th>
+                                    @Html.DisplayNameFor(model => model.ListBestSellingFood.FirstOrDefault().Count)
+                                </th>
+                                <th></th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            @if (Model != null && Model.ListBestSellingFood != null)
+                            {
+                                @foreach (var item in Model.ListBestSellingFood)
+                                {
+                                    <tr>
+                                        <td>
+                                            @Html.DisplayFor(modelItem => item.ID)
+                                        </td>
+                                        <td>
+                                            <div class="row-cols-sm-3 row-cols-lg-1" style="width:100px;height:100px;overflow: hidden;">
+                                                <a href="@(Configuration["BaseAddress"] + Configuration["user-content"] + "/" + item.ImagePath)" title="@item.ImagePath">
+                                                    <img class="img-thumbnail" src="@(Configuration["BaseAddress"] + Configuration["user-content"] + "/" + item.ImagePath)" style="width:100%" alt="@item.ImagePath" />
+                                                </a>
+                                            </div>
+                                        </td>
+                                        <td>
+                                            @Html.DisplayFor(modelItem => item.Name)
+                                        </td>
+                                        <td>
+                                            @Html.DisplayFor(modelItem => item.Description)
+                                        </td>
+                                        <td>
+                                            @Html.DisplayFor(modelItem => item.Price)
+                                        </td>
+                                        <td>
+                                            @Html.DisplayFor(modelItem => item.Count)
+                                        </td>
+                                        <td>
+
+                                            <div class="dropdown">
+                                                <button class="btn btn-secondary dropdown-toggle" type="button" id="dropdownMenuButton" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
+                                                    Action
+                                                </button>
+                                                <div class="dropdown-menu" aria-labelledby="dropdownMenuButton">
+                                                    <a class="dropdown-item btn btn-primary" href=@Url.Action("Details","Foods", new { id = item.ID })>Details</a>
+
+                                                    @if ((await AuthorizationService.AuthorizeAsync(User, RoleTypes.Admin)).Succeeded)
+                                                    {
+                                                        <a class="dropdown-item btn btn-primary" href=@Url.Action("Delete","Foods", new { id = item.ID })>Delete</a>
+                                                    }
+
+                                                    <a class="dropdown-item btn btn-primary" href=@Url.Action("Edit","Foods", new { id = item.ID })>Edit</a>
+
+                                                </div>
+                                            </div>
+                                        </td>
+                                    </tr>
+                                }
+                            }
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="container-fluid">
+        <h1 class="mt-4">List valid Promotion</h1>
+        <ol class="breadcrumb mb-4">
+            <li class="breadcrumb-item"><a href="index.html">Dashboard</a></li>
+            <li class="breadcrumb-item active">List valid Promotion</li>
+        </ol>
+        <div class="card mb-4">
+            <div class="card-body">
+                <div class="table-responsive">
+                    <table class="table table-bordered" id="dataTable2" width="100%" cellspacing="0">
+                        <thead>
+                            <tr>
+                                <th>
+                                    @Html.DisplayNameFor(model => model.ListValidPromotion.FirstOrDefault().ID)
+                                </th>
+                                <th>
+                                    Image
+                                </th>
+                                <th>
+                                    @Html.DisplayNameFor(model => model.ListValidPromotion.FirstOrDefault().Name)
+                                </th>
+                                <th>
+                                    @Html.DisplayNameFor(model => model.ListValidPromotion.FirstOrDefault().Code)
+                                </th>
+
+
+                                <th>
+                                    @Html.DisplayNameFor(model => model.ListValidPromotion.FirstOrDefault().StartDate)
+                                </th>
+                                <th>
+                                    @Html.DisplayNameFor(model => model.ListValidPromotion.FirstOrDefault().EndDate)
+                                </th>
+                                <th>
+                                    @Html.DisplayNameFor(model => model.ListValidPromotion.FirstOrDefault().UseTimes)
+                                </th>
+                                <th>
+                                    @Html.DisplayNameFor(model => model.ListValidPromotion.FirstOrDefault().Percent)
+                                </th>
+                                <th>
+                                    @Html.DisplayNameFor(model => model.ListValidPromotion.FirstOrDefault().Enabled)
+                                </th>
+
+                                <th></th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            @if (Model != null && Model.ListValidPromotion != null)
+                            {
+                                @foreach (var item in Model.ListValidPromotion)
+                                {
+                                    <tr>
+                                        <td>
+                                            @Html.DisplayFor(modelItem => item.ID)
+                                        </td>
+                                        <td>
+                                            <div class="row-cols-sm-3 row-cols-lg-1" style="width:100px;height:100px;overflow: hidden;">
+                                                <a href="@(Configuration["BaseAddress"] + Configuration["user-content"] + "/" + item.ImagePath)" title="@item.ImagePath">
+                                                    <img class="img-thumbnail" src="@(Configuration["BaseAddress"] + Configuration["user-content"] + "/" + item.ImagePath)" style="width:100%" alt="@item.ImagePath" />
+                                                </a>
+                                            </div>
+                                        </td>
+                                        <td>
+                                            @Html.DisplayFor(modelItem => item.Name)
+                                        </td>
+                                        <td>
+                                            @Html.DisplayFor(modelItem => item.Code)
+                                        </td>
+                                        <td>
+                                            @Html.DisplayFor(modelItem => item.StartDate.Date)
+                                        </td>
+                                        <td>
+                                            @Html.DisplayFor(modelItem => item.EndDate.Date)
+                                        </td>
+                                        <td>
+                                            @Html.DisplayFor(modelItem => item.UseTimes)
+                                        </td>
+                                        <td>
+                                            @Html.DisplayFor(modelItem => item.Percent)
+                                        </td>
+                                        <td>
+                                            @Html.DisplayFor(modelItem => item.Enabled)
+                                        </td>
+
+                                        <td>
+                                            @Html.ActionLink("Edit", "Edit", "Promotions", new { id = item.ID }) |
+                                            @Html.ActionLink("Details", "Details", "Promotions", new { id = item.ID }) |
+                                            @if ((await AuthorizationService.AuthorizeAsync(User, RoleTypes.Admin)).Succeeded)
+                                            {
+                                                 @Html.ActionLink("Delete", "Delete", "Promotions", new { id = item.ID })
+                                            }
+                                            </td>
+                                    </tr>
+                                }
+                            }
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="container-fluid">
+        <h1 class="mt-4">List valid SaleCampaigns</h1>
+        <ol class="breadcrumb mb-4">
+            <li class="breadcrumb-item"><a href="index.html">Dashboard</a></li>
+            <li class="breadcrumb-item active">List valid SaleCampaigns</li>
+        </ol>
+        <div class="card mb-4">
+            <div class="card-body">
+                <div class="table-responsive">
+                    <table class="table table-bordered" id="dataTable3" width="100%" cellspacing="0">
+                        <thead>
+                            <tr>
+                                <th>
+                                    @Html.DisplayNameFor(model => model.ListSaleCampaign.FirstOrDefault().ID)
+                                </th>
+                                <th>
+                                    @Html.DisplayNameFor(model => model.ListSaleCampaign.FirstOrDefault().Name)
+                                </th>
+
+
+                                <th>
+                                    @Html.DisplayNameFor(model => model.ListSaleCampaign.FirstOrDefault().StartDate)
+                                </th>
+                                <th>
+                                    @Html.DisplayNameFor(model => model.ListSaleCampaign.FirstOrDefault().EndDate)
+                                </th>
+
+                                <th>
+                                    @Html.DisplayNameFor(model => model.ListSaleCampaign.FirstOrDefault().Percent)
+                                </th>
+                                <th>
+                                    @Html.DisplayNameFor(model => model.ListSaleCampaign.FirstOrDefault().Enabled)
+                                </th>
+
+                                <th></th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            @if (Model != null && Model.ListSaleCampaign != null)
+                            {
+                                @foreach (var item in Model.ListSaleCampaign)
+                                {
+                                    <tr>
+                                        <td>
+                                            @Html.DisplayFor(modelItem => item.ID)
+                                        </td>
+                                        <td>
+                                            @Html.DisplayFor(modelItem => item.Name)
+                                        </td>
+
+                                        <td>
+                                            @Html.DisplayFor(modelItem => item.StartDate.Date)
+                                        </td>
+                                        <td>
+                                            @Html.DisplayFor(modelItem => item.EndDate.Date)
+                                        </td>
+
+                                        <td>
+                                            @Html.DisplayFor(modelItem => item.Percent)
+                                        </td>
+                                        <td>
+                                            @Html.DisplayFor(modelItem => item.Enabled)
+                                        </td>
+
+                                        <td>
+                                            <div class="dropdown">
+                                                <button class="btn btn-secondary dropdown-toggle" type="button" id="dropdownMenuButton" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
+                                                    Action
+                                                </button>
+                                                <div class="dropdown-menu" aria-labelledby="dropdownMenuButton">
+                                                    <a class="dropdown-item btn btn-primary" href=@Url.Action("Details", "SaleCampaigns", new { id = item.ID })>Details</a>
+
+                                                    <a class="dropdown-item btn btn-primary" href=@Url.Action("Delete", "SaleCampaigns",new { id = item.ID })>Delete</a>
+
+                                                    @if ((await AuthorizationService.AuthorizeAsync(User, RoleTypes.Admin)).Succeeded)
+                                                    {
+                                                        <a class="dropdown-item btn btn-primary" href=@Url.Action("Edit", "SaleCampaigns",new { id = item.ID })>Edit</a>
+                                                    }
+                                                </div>
+                                            </div>
+                                        </td>
+                                    </tr>
+                                }
+                            }
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
